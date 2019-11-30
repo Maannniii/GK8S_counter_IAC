@@ -38,7 +38,7 @@ resource "google_compute_network" "counter-network" {
   }
 }
 
-resource "google_container_cluster" "primary" {
+rresource "google_container_cluster" "primary" {
   name = "counter"
   location = var.region
   remove_default_node_pool = true
@@ -62,6 +62,7 @@ resource "google_container_cluster" "primary" {
   ip_allocation_policy {
 
   }
+  network = google_compute_network.counter-network.self_link
 }
 
 resource "google_container_node_pool" "primary_preemptible_nodes" {
