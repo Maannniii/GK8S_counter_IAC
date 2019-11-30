@@ -212,3 +212,30 @@ resource "kubernetes_service" "frontendservice" {
     }
   }
 }
+
+resource "kubernetes_ingress" "ingress" {
+  metadata {
+    name = "network"
+    namespace = kubernetes_namespace.namespace.metadata[0].name
+  }
+
+  spec {
+    backend {
+      service_name = kubernetes_service.frontendservice.metadata[0].name
+      service_port = kubernetes_service.frontendservice.spec[0].port[0].port
+    }
+
+    rule {
+      http {
+        path {
+          backend {
+            service_name = kubernetes_service.frontendservice.metadata[0].name
+            service_port = kubernetes_service.frontendservice.spec[0].port[0].port
+          }
+
+          path = "/*"
+        }
+      }
+    }
+  }
+}
