@@ -62,6 +62,14 @@ rresource "google_container_cluster" "primary" {
   ip_allocation_policy {
 
   }
+
+  provisioner "local-exec" {
+    command = "gcloud container clusters get-credentials ${self.name} --region ${self.location} --project ${var.project}"
+    interpreter = [
+      "bash",
+      "-c"]
+  }
+  
   network = google_compute_network.counter-network.self_link
 }
 
@@ -97,4 +105,28 @@ resource "google_redis_instance" "cache" {
   location_id = data.google_compute_zones.all.names[0]
   alternative_location_id = data.google_compute_zones.all.names[1]
   authorized_network = google_compute_network.counter-network.self_link
+}
+
+provider "kubernetes" {
+}
+
+resource "kubernetes_namespace" "namespace" {
+  metadata {
+    name = "counter"
+  }
+}
+
+resource "kubernetes_config_map" "redis_url" {
+  metadata {
+    name = "redis-config"
+    namespace = kubernetes_namespace.namespace.metadata[0].name
+  }
+  data = {
+    REDIS_URL = join("", [
+      "redis://",
+      google_redis_instance.cache.host,
+      ":",
+      google_redis_instance.cache.port,
+      "/0"])
+  }
 }
