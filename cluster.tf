@@ -87,3 +87,14 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
     ]
   }
 }
+
+resource "google_redis_instance" "cache" {
+  name = "redis"
+  display_name = "Redis HA"
+  tier = "STANDARD_HA"
+  memory_size_gb = 1
+
+  location_id = data.google_compute_zones.all.names[0]
+  alternative_location_id = data.google_compute_zones.all.names[1]
+  authorized_network = google_compute_network.counter-network.self_link
+}
