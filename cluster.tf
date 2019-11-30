@@ -38,7 +38,7 @@ resource "google_compute_network" "counter-network" {
   }
 }
 
-rresource "google_container_cluster" "primary" {
+resource "google_container_cluster" "primary" {
   name = "counter"
   location = var.region
   remove_default_node_pool = true
@@ -62,14 +62,12 @@ rresource "google_container_cluster" "primary" {
   ip_allocation_policy {
 
   }
-
   provisioner "local-exec" {
     command = "gcloud container clusters get-credentials ${self.name} --region ${self.location} --project ${var.project}"
     interpreter = [
       "bash",
       "-c"]
   }
-
   network = google_compute_network.counter-network.self_link
 }
 
@@ -107,7 +105,17 @@ resource "google_redis_instance" "cache" {
   authorized_network = google_compute_network.counter-network.self_link
 }
 
+resource "local_file" "kubeconfig" {
+  filename = "~/.kube/config"
+  directory_permission = "0755"
+  file_permission = "0644"
+  depends_on = [
+    google_container_cluster.primary]
+}
+
 provider "kubernetes" {
+  load_config_file = true
+  config_path = local_file.kubeconfig.filename
 }
 
 resource "kubernetes_namespace" "namespace" {
