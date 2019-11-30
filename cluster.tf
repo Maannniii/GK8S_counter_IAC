@@ -1,9 +1,3 @@
-provider "google" {
-  project = "project-id"
-  region = "us-central1"
-  credentials ="account.json"
-}
-
 variable "project" {
   description = "Google Cloud project ID"
   default = "projectid"
@@ -15,4 +9,10 @@ variable "region" {
 variable "credentials" {
   description = "Google Cloud Service Account"
   default = "account.json"
+}
+
+provider "google" {
+  project = var.project
+  region = var.region
+  credentials = file(var.credentials)
 }
